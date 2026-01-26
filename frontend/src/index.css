@@ -1,0 +1,520 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Poppins:wght@400;500;600&family=Merriweather:wght@400;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-soft: #e0e7ff;
+  --page-bg-start: #f6f8fb;
+  --page-bg-end: #f9fafb;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-border: #e2e8f0;
+  --surface-muted: #f1f5f9;
+  --skeleton-base: rgba(0, 0, 0, 0.04);
+  --skeleton-highlight: rgba(0, 0, 0, 0.02);
+}
+
+.dark :root {
+  color-scheme: dark;
+  --page-bg-start: #0b1220;
+  --page-bg-end: #0d1424;
+  --surface: #0f172a;
+  --surface-elevated: #111827;
+  --surface-border: #1f2937;
+  --surface-muted: #0b1220;
+  --skeleton-base: rgba(255, 255, 255, 0.05);
+  --skeleton-highlight: rgba(255, 255, 255, 0.03);
+}
+
+body {
+  font-family: "Inter", "InterVariable", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, var(--page-bg-start) 0%, var(--page-bg-end) 100%);
+  min-height: 100vh;
+  line-height: 1.6;
+  letter-spacing: -0.1px;
+  user-select: none;
+}
+
+a {
+  color: inherit;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(55, 65, 81, 0.7);
+}
+
+.resize-handle {
+  width: 6px;
+  cursor: col-resize;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.12) 50%, transparent 100%);
+}
+
+.modal-sheet {
+  animation: modal-enter 0.2s ease-out;
+}
+
+@media (max-width: 640px) {
+  .modal-sheet {
+    animation: modal-slide-up 0.24s ease-out;
+  }
+}
+
+@keyframes modal-enter {
+  from {
+    transform: scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-up {
+  from {
+    transform: scale(1);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@layer components {
+  .page-title {
+    @apply text-2xl font-semibold text-gray-900 dark:text-gray-100;
+  }
+  .page-subtitle {
+    @apply text-xs uppercase tracking-wide text-gray-500;
+  }
+  .section-title {
+    @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
+  }
+  .section-subtitle {
+    @apply text-sm text-gray-500;
+  }
+  .text-body {
+    @apply text-sm text-gray-700 dark:text-gray-200;
+  }
+  .text-muted {
+    @apply text-xs text-gray-500;
+  }
+  .card {
+    @apply rounded-2xl border shadow-sm;
+    background-color: var(--surface);
+    border-color: var(--surface-border);
+  }
+  .card-hover {
+    @apply transition hover:-translate-y-0.5 hover:shadow-md;
+  }
+  .modal-surface {
+    background-color: var(--surface-elevated);
+  }
+  /* Legacy button classes - prefer using Button component from ui.tsx */
+  .btn-primary {
+    @apply rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors;
+    background-color: var(--accent);
+  }
+  .btn-primary:hover {
+    background-color: var(--accent-hover);
+  }
+  .btn-primary:focus {
+    @apply outline-none ring-2 ring-offset-1;
+    --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800;
+  }
+  .btn-ghost:focus {
+    @apply outline-none ring-2 ring-offset-1;
+    --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  .btn-ghost:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+  .text-accent {
+    color: var(--accent);
+  }
+  .bg-accent-soft {
+    background-color: var(--accent-soft);
+  }
+  .skeleton {
+    @apply relative overflow-hidden;
+    background-color: var(--skeleton-base);
+  }
+}
+
+/* Form element base styles for native elements */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="search"],
+input[type="number"],
+textarea {
+  background-color: var(--surface);
+  border-color: var(--surface-border);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+select {
+  background-color: var(--surface);
+  border-color: var(--surface-border);
+}
+
+/* Custom checkbox and radio styling */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
+  background-color: var(--surface);
+  border-color: var(--surface-border);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:focus,
+input[type="radio"]:focus {
+  --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* Range input styling */
+input[type="range"] {
+  @apply h-2 cursor-pointer appearance-none rounded-full;
+  background: var(--surface-muted);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  @apply h-4 w-4 cursor-pointer appearance-none rounded-full border-0 shadow-sm;
+  background: var(--accent);
+}
+
+input[type="range"]::-moz-range-thumb {
+  @apply h-4 w-4 cursor-pointer rounded-full border-0 shadow-sm;
+  background: var(--accent);
+}
+
+input[type="range"]:focus {
+  @apply outline-none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent);
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.reader-content {
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgb(31, 41, 55);
+  /* Optimal line length for readability: 50-75 characters */
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  user-select: text;
+}
+
+.dark .reader-content {
+  color: rgb(229, 231, 235);
+}
+
+/* Headings */
+.reader-content :where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 600;
+  margin: 1.4em 0 0.6em;
+  line-height: 1.3;
+}
+
+.reader-content :where(h1) {
+  font-size: 1.5em;
+}
+
+.reader-content :where(h2) {
+  font-size: 1.3em;
+}
+
+.reader-content :where(h3) {
+  font-size: 1.15em;
+}
+
+/* Block elements */
+.reader-content :where(p, ul, ol, blockquote, pre, figure, table) {
+  margin: 0.9em 0;
+}
+
+/* Lists */
+.reader-content :where(ul, ol) {
+  padding-left: 1.4rem;
+  list-style-position: outside;
+}
+
+.reader-content :where(ul) {
+  list-style-type: disc;
+}
+
+.reader-content :where(ol) {
+  list-style-type: decimal;
+}
+
+.reader-content :where(li) {
+  margin: 0.3em 0;
+}
+
+.reader-content :where(li > ul, li > ol) {
+  margin: 0.3em 0;
+}
+
+/* Media */
+.reader-content :where(img, video, audio) {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 1.2rem auto;
+  object-fit: contain;
+}
+
+/* Figure and captions */
+.reader-content :where(figure) {
+  margin: 1.5rem 0;
+  padding: 0;
+}
+
+.reader-content :where(figure img) {
+  margin-bottom: 0.5rem;
+}
+
+.reader-content :where(figcaption) {
+  font-size: 0.85em;
+  color: rgb(107, 114, 128);
+  text-align: center;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.dark .reader-content :where(figcaption) {
+  color: rgb(156, 163, 175);
+}
+
+/* Blockquotes */
+.reader-content :where(blockquote) {
+  border-left: 3px solid rgb(229, 231, 235);
+  padding-left: 1rem;
+  margin-left: 0;
+  color: rgb(75, 85, 99);
+  font-style: italic;
+}
+
+.dark .reader-content :where(blockquote) {
+  border-left-color: rgb(55, 65, 81);
+  color: rgb(156, 163, 175);
+}
+
+.reader-content :where(blockquote p) {
+  margin: 0.5em 0;
+}
+
+/* Code - Inline */
+.reader-content :where(code) {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875em;
+  background-color: rgb(243, 244, 246);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  word-break: break-word;
+}
+
+.dark .reader-content :where(code) {
+  background-color: rgb(31, 41, 55);
+}
+
+/* Code - Block */
+.reader-content :where(pre) {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875em;
+  background-color: rgb(243, 244, 246);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  line-height: 1.5;
+  white-space: pre;
+  word-wrap: normal;
+}
+
+.dark .reader-content :where(pre) {
+  background-color: rgb(17, 24, 39);
+}
+
+.reader-content :where(pre code) {
+  background-color: transparent;
+  padding: 0;
+  font-size: inherit;
+  border-radius: 0;
+}
+
+/* Tables */
+.reader-content :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  overflow-x: auto;
+  display: block;
+}
+
+.reader-content :where(thead) {
+  background-color: rgb(243, 244, 246);
+}
+
+.dark .reader-content :where(thead) {
+  background-color: rgb(31, 41, 55);
+}
+
+.reader-content :where(th, td) {
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border: 1px solid rgb(229, 231, 235);
+}
+
+.dark .reader-content :where(th, td) {
+  border-color: rgb(55, 65, 81);
+}
+
+.reader-content :where(th) {
+  font-weight: 600;
+}
+
+.reader-content :where(tbody tr:nth-child(even)) {
+  background-color: rgb(249, 250, 251);
+}
+
+.dark .reader-content :where(tbody tr:nth-child(even)) {
+  background-color: rgb(17, 24, 39);
+}
+
+/* Links */
+.reader-content :where(a) {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.reader-content :where(a:hover) {
+  color: var(--accent-hover);
+}
+
+/* Horizontal rule */
+.reader-content :where(hr) {
+  border: none;
+  border-top: 1px solid rgb(229, 231, 235);
+  margin: 1.5rem 0;
+}
+
+.dark .reader-content :where(hr) {
+  border-top-color: rgb(55, 65, 81);
+}
+
+/* Strong and emphasis */
+.reader-content :where(strong, b) {
+  font-weight: 600;
+}
+
+.reader-content :where(em, i) {
+  font-style: italic;
+}
+
+/* Subscript and superscript */
+.reader-content :where(sub, sup) {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.reader-content :where(sup) {
+  top: -0.5em;
+}
+
+.reader-content :where(sub) {
+  bottom: -0.25em;
+}
+
+/* Definition lists */
+.reader-content :where(dl) {
+  margin: 1em 0;
+}
+
+.reader-content :where(dt) {
+  font-weight: 600;
+  margin-top: 0.8em;
+}
+
+.reader-content :where(dd) {
+  margin-left: 1.2rem;
+  margin-top: 0.2em;
+}
+
+/* Mark/highlight */
+.reader-content :where(mark) {
+  background-color: rgb(254, 249, 195);
+  padding: 0.1em 0.2em;
+  border-radius: 2px;
+}
+
+.dark .reader-content :where(mark) {
+  background-color: rgb(133, 77, 14);
+  color: rgb(254, 249, 195);
+}

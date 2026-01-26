@@ -1,0 +1,140 @@
+# ============================================================================
+# RSS Feed Manager - Git Ignore Configuration
+# ============================================================================
+
+# ============================================================================
+# OS Generated Files
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# IDE / Editor
+# ============================================================================
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+
+# ============================================================================
+# Environment Variables (IMPORTANT: Never commit secrets!)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ============================================================================
+# Backend (Go)
+# ============================================================================
+# Binaries
+backend/bin/
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/server
+backend/cmd/server/server
+
+# Test binary
+backend/*.test
+
+# Output of go coverage tool
+backend/*.out
+backend/coverage.html
+
+# Go workspace file
+go.work
+
+# Database files (local development data)
+backend/data/*.db
+backend/data/*.db-shm
+backend/data/*.db-wal
+backend/data/*.db-journal
+
+# Go vendor (if using)
+# backend/vendor/
+
+# ============================================================================
+# Frontend (Node.js / React / Vite)
+# ============================================================================
+# Dependencies
+frontend/node_modules/
+frontend/.npm-cache/
+
+# Build output
+frontend/dist/
+frontend/build/
+frontend/dev-dist/
+
+# PWA generated files (regenerated on build)
+frontend/public/sw.js
+frontend/public/workbox-*.js
+
+# Vite cache
+frontend/.vite/
+
+# TypeScript cache
+frontend/*.tsbuildinfo
+
+# Debug logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Local env files
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# ============================================================================
+# Testing
+# ============================================================================
+coverage/
+*.lcov
+.nyc_output/
+
+# ============================================================================
+# Temporary Files
+# ============================================================================
+temp/
+tmp/
+*.tmp
+*.temp
+*.log
+logs/
+
+# ============================================================================
+# Docker (if used later)
+# ============================================================================
+docker-compose.override.yml
+
+# ============================================================================
+# Deployment / Infrastructure (if used later)
+# ============================================================================
+infra/secrets/
+*.pem
+*.key
+
+# ============================================================================
+# Misc
+# ============================================================================
+*.bak
+*.backup
+.cache/

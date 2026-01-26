@@ -1,0 +1,80 @@
+UI Reference (rss-feed-manager frontend)
+
+Layout
+- app-shell: root app container (entire app)
+- app-layout: layout wrapper (sidebar + main)
+- app-sidebar-wrap: left panel container (resizable / drawer)
+- app-sidebar: left panel surface
+- app-overlay: mobile sidebar backdrop
+- app-main: main scroll region
+- app-content: main content width container
+- home-panel: home view wrapper
+
+Header
+- app-header: sticky top bar
+- app-header-inner: header row wrapper
+- app-header-title: title block
+- app-header-actions: right-side controls
+- app-header-search: search placeholder chip
+- app-header-menu: mobile menu button
+
+Sidebar
+- sidebar-panel: left panel surface
+- sidebar-header: logo + refresh + close
+- sidebar-nav: primary navigation list
+- sidebar-tree: feed tree container
+
+Feed Tree
+- feed-tree: feed tree root
+- feed-tree-header: "Feeds" row
+- feed-tree-actions: header actions (menu)
+- feed-tree-list: list of folders
+- feed-tree-folder: folder group wrapper
+- feed-tree-feeds: feeds list under a folder
+- feed-tree-rename: rename row
+- feed-tree-add: add feed row
+
+Lists
+- item-list: item list root
+- item-list-body: list container
+- item-list-grid: card grid layout
+- item-list-compact: compact list wrapper
+- item-list-title: title-only list wrapper
+- item-card: card presentation item
+- item-row: compact row item
+- item-title-row: title-only row item
+
+Panels
+- topnews-panel: top news wrapper
+- discover-panel: discover page root
+
+Home categories
+- home-category-bar: category pills container
+- home-category-track: horizontal scroll row for pills
+- home-category-pill: each category pill button
+
+Modals
+- modal-overlay: modal backdrop
+- modal-container: modal container
+- modal-header: modal title bar
+- modal-close: modal close button
+- modal-loading: loading overlay
+- modal-loading-card: loading message card
+- article-modal: article modal container
+- article-modal-header: article title area
+- article-modal-tabs: tab row
+- article-modal-content: article body area
+- article-modal-media: media list in default view
+- article-modal-html: sanitized article HTML
+- settings-modal: settings modal container
+- settings-layout: settings modal layout wrapper
+- settings-sidebar: settings left rail
+- settings-content: settings content area
+- settings-section: general/appearance/reading content
+- discover-add-modal: add-feed modal content
+
+Other
+- install-prompt: add-to-home prompt wrapper
+- install-prompt-card: prompt card surface
+- log-panel: floating log button/wrapper
+- log-panel-body: log panel content
