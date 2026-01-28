@@ -64,7 +64,7 @@ const readPresentation = (view: NavKey): Presentation => {
   if (isPresentation(stored)) return stored;
   const legacy = localStorage.getItem("pref:presentation");
   if (isPresentation(legacy)) return legacy;
-  return "compact";
+  return "cards";
 };
 
 const readSortPref = (): SortPref => {
@@ -533,16 +533,16 @@ export function AppShell() {
   const refreshAction =
     view === "home" && feedId
       ? {
-          label: "Refresh feed",
-          onClick: () => refreshMutations.feed.mutate(feedId),
-          loading: isRefreshingFeed,
-        }
+        label: "Refresh feed",
+        onClick: () => refreshMutations.feed.mutate(feedId),
+        loading: isRefreshingFeed,
+      }
       : view === "topnews"
         ? {
-            label: "Refresh top news",
-            onClick: () => topNewsQuery.refetch(),
-            loading: topNewsQuery.isFetching,
-          }
+          label: "Refresh top news",
+          onClick: () => topNewsQuery.refetch(),
+          loading: topNewsQuery.isFetching,
+        }
         : undefined;
 
   const hasMore = view === "home" ? Boolean(itemsQuery.hasNextPage) : Boolean(bookmarksQuery.hasNextPage);
@@ -643,9 +643,9 @@ export function AppShell() {
             isDesktop
               ? { width: sidebarWidth + handleWidth }
               : {
-                  width: sidebarOpen ? "85vw" : "0px",
-                  maxWidth: "320px",
-                }
+                width: sidebarOpen ? "85vw" : "0px",
+                maxWidth: "320px",
+              }
           }
         >
           <Sidebar
@@ -680,12 +680,12 @@ export function AppShell() {
             onMouseDown={
               isDesktop
                 ? (e) => {
-                    e.preventDefault();
-                    resizing.current = true;
-                    resizeStartX.current = e.clientX;
-                    resizeStartWidth.current = sidebarWidth;
-                    document.body.style.cursor = "col-resize";
-                  }
+                  e.preventDefault();
+                  resizing.current = true;
+                  resizeStartX.current = e.clientX;
+                  resizeStartWidth.current = sidebarWidth;
+                  document.body.style.cursor = "col-resize";
+                }
                 : undefined
             }
           />

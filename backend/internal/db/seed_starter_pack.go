@@ -110,13 +110,14 @@ var starterPack = []starterCategory{
 	},
 }
 
-// newUserStarterPack is a smaller set of feeds for new users (3 folders, 2 feeds each)
+// newUserStarterPack is a starter set of feeds for new users (5 folders, 2-3 feeds each)
 var newUserStarterPack = []starterCategory{
 	{
 		Name: "Technology",
 		Feeds: []starterFeed{
 			{Title: "The Verge", URL: "https://www.theverge.com/rss/index.xml", SiteURL: "https://www.theverge.com"},
 			{Title: "Hacker News", URL: "https://hnrss.org/frontpage", SiteURL: "https://news.ycombinator.com"},
+			{Title: "TechCrunch", URL: "https://techcrunch.com/feed/", SiteURL: "https://techcrunch.com"},
 		},
 	},
 	{
@@ -124,6 +125,7 @@ var newUserStarterPack = []starterCategory{
 		Feeds: []starterFeed{
 			{Title: "BBC World", URL: "http://feeds.bbci.co.uk/news/world/rss.xml", SiteURL: "https://www.bbc.com"},
 			{Title: "Reuters World", URL: "https://feeds.reuters.com/Reuters/worldNews", SiteURL: "https://www.reuters.com"},
+			{Title: "NYTimes World", URL: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", SiteURL: "https://www.nytimes.com"},
 		},
 	},
 	{
@@ -131,6 +133,20 @@ var newUserStarterPack = []starterCategory{
 		Feeds: []starterFeed{
 			{Title: "NASA Breaking News", URL: "https://www.nasa.gov/rss/dyn/breaking_news.rss", SiteURL: "https://www.nasa.gov"},
 			{Title: "ScienceDaily", URL: "https://www.sciencedaily.com/rss/all.xml", SiteURL: "https://www.sciencedaily.com"},
+		},
+	},
+	{
+		Name: "Entertainment",
+		Feeds: []starterFeed{
+			{Title: "Variety", URL: "https://variety.com/feed/", SiteURL: "https://variety.com"},
+			{Title: "IGN", URL: "https://feeds.ign.com/ign/all", SiteURL: "https://www.ign.com"},
+		},
+	},
+	{
+		Name: "Sports",
+		Feeds: []starterFeed{
+			{Title: "ESPN Top Headlines", URL: "https://www.espn.com/espn/rss/news", SiteURL: "https://www.espn.com"},
+			{Title: "BBC Sport", URL: "http://feeds.bbci.co.uk/sport/rss.xml?edition=uk", SiteURL: "https://www.bbc.com/sport"},
 		},
 	},
 }
