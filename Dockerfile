@@ -1,5 +1,8 @@
 # Stage 1: Build the Frontend
 FROM node:18-alpine AS builder-node
+WORKDIR /app
+COPY logos ./logos
+
 WORKDIR /app/frontend
 # Copy package files first for better caching
 COPY frontend/package*.json ./
