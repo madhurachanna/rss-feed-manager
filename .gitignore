@@ -142,3 +142,4 @@ infra/secrets/
 .cache/
 data/rss.db-shm
 data/rss.db-wal
+data/
