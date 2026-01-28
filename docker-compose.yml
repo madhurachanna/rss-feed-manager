@@ -5,10 +5,11 @@ services:
     restart: unless-stopped
     ports:
       - "80:8080" # Maps port 80 on the server to 8080 in the container
+    env_file:
+      - .env.production
     environment:
       - PORT=8080
       - DB_PATH=./data/rss.db
-      - FRONTEND_ORIGIN=http://localhost
-      - DEV_MAILER=true  # Prints sign-in codes to logs instead of sending emails
+      - FRONTEND_ORIGIN=http://3.15.210.121
     volumes:
       - ./data:/app/data # PERSISTENCE: Maps ./data on host to /app/data in container
