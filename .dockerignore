@@ -1,0 +1,26 @@
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# Build outputs
+frontend/dist/
+backend/main
+
+# Local development files
+.git/
+.gitignore
+*.md
+**/.env
+**/.env.*
+!**/.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data (will mount as volume)
+data/

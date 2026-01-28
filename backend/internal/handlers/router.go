@@ -54,9 +54,9 @@ func NewRouter(cfg Config) http.Handler {
 
 	// Auth routes (public)
 	r.Route("/api/auth", func(r chi.Router) {
-		r.Post("/magic-link", authHandler.SendMagicLink)  // Sends OTP now
-		r.Post("/verify-otp", authHandler.VerifyOTP)       // New OTP verification
-		r.Get("/verify", authHandler.VerifyMagicLink)      // Legacy magic link (kept for compatibility)
+		r.Post("/magic-link", authHandler.SendMagicLink) // Sends OTP now
+		r.Post("/verify-otp", authHandler.VerifyOTP)     // New OTP verification
+		r.Get("/verify", authHandler.VerifyMagicLink)    // Legacy magic link (kept for compatibility)
 		r.Post("/logout", authHandler.Logout)
 	})
 
@@ -65,6 +65,13 @@ func NewRouter(cfg Config) http.Handler {
 		r.Get("/", h.discover)
 		r.Post("/resolve", h.discoverResolve)
 	})
+
+	// Static files (Frontend)
+	// We serve everything from "./dist".
+	// If a file exists, serve it. If not, and it's not /api, serve index.html (SPA Fallback).
+	workDir, _ := os.Getwd()
+	filesDir := http.Dir(fmt.Sprintf("%s/dist", workDir))
+	FileServer(r, "/", filesDir)
 
 	// Protected routes (auth required)
 	r.Group(func(r chi.Router) {
@@ -600,4 +607,46 @@ func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 func writeError(w http.ResponseWriter, status int, err error) {
 	writeJSON(w, status, map[string]string{"error": err.Error()})
+}
+
+// FileServer conveniently sets up a http.FileServer handler to serve
+// static files from a http.FileSystem.
+func FileServer(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("FileServer does not permit any URL parameters.")
+	}
+
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", 301).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+
+		// Wrapper to handle SPA fallback (index.html)
+		// We inspect the requested file; if it doesn't exist, serving index.html
+		requestPath := chi.URLParam(r, "*")
+		f, err := root.Open(requestPath)
+		if err != nil && os.IsNotExist(err) {
+			// File not found, serve index.html
+			index, err := root.Open("index.html")
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
+			defer index.Close()
+			http.ServeContent(w, r, "index.html", time.Now(), index)
+			return
+		}
+		if err == nil {
+			defer f.Close()
+		}
+
+		// Otherwise serve normally
+		fs.ServeHTTP(w, r)
+	})
 }

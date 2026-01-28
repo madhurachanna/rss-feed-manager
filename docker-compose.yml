@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: rss-feed-manager
+    restart: unless-stopped
+    ports:
+      - "80:8080" # Maps port 80 on the server to 8080 in the container
+    environment:
+      - PORT=8080
+      - DB_PATH=./data/rss.db
+      - FRONTEND_ORIGIN=http://localhost
+      - DEV_MAILER=true  # Prints sign-in codes to logs instead of sending emails
+    volumes:
+      - ./data:/app/data # PERSISTENCE: Maps ./data on host to /app/data in container

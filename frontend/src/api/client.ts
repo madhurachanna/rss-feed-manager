@@ -3,26 +3,14 @@ import axios from "axios";
 const isLocalHost = (host: string) => host === "localhost" || host === "127.0.0.1";
 
 const resolveBaseUrl = () => {
+  // In production, use relative URLs (empty string) since frontend and backend
+  // are served from the same origin
   const envBase = import.meta.env.VITE_API_BASE;
-  const isDev = import.meta.env.DEV;
-  if (typeof window === "undefined") return envBase || (isDev ? "" : "http://localhost:8080");
+  if (envBase) return envBase;
 
-  if (envBase) {
-    if (isDev) {
-      try {
-        const parsed = new URL(envBase);
-        if (isLocalHost(parsed.hostname)) {
-          return "";
-        }
-      } catch {
-        // If envBase is relative (or invalid), just use it.
-      }
-    }
-    return envBase;
-  }
-
-  if (isDev) return "";
-  return window.location.origin;
+  // For development with Vite proxy, use empty string (relative URLs work)
+  // For production Docker build, also use empty string (same origin)
+  return "";
 };
 
 const api = axios.create({
