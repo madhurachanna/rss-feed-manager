@@ -12,8 +12,16 @@ export function getCover(item: Item): string | null {
     try {
       const parsed = JSON.parse(item.mediaJson);
       const media = Array.isArray(parsed) ? parsed : [];
-      const img = media.find((m) => m?.type?.startsWith("image/") && m.url && !isLikelyAvatar(m.url));
-      if (img?.url) return img.url;
+      // Sort by size (largest first) if available
+      const images = media
+        .filter((m) => m?.type?.startsWith("image/") && m.url && !isLikelyAvatar(m.url))
+        .sort((a, b) => {
+          const sizeA = Number(a.length) || 0;
+          const sizeB = Number(b.length) || 0;
+          return sizeB - sizeA;
+        });
+
+      if (images.length > 0) return images[0].url;
     } catch {
       /* ignore */
     }
@@ -30,7 +38,7 @@ export function getCover(item: Item): string | null {
       const cls = img.getAttribute("class") || "";
       const id = img.getAttribute("id") || "";
       if (!src || isLikelyAvatar(src) || isLikelyAvatar(`${alt} ${cls} ${id}`)) continue;
-      const sizeScore = estimateSizeScore(img);
+      const sizeScore = estimateSizeScore(img as HTMLImageElement);
       if (!best || sizeScore > best.score) {
         best = { src, score: sizeScore };
       }
@@ -50,7 +58,19 @@ function isLikelyAvatar(text: string) {
     needle.includes("headshot") ||
     needle.includes("logo") ||
     needle.includes("icon") ||
-    needle.includes("badge")
+    needle.includes("badge") ||
+    // Specific ad/tracking patterns (not broad "ad" which matches "download", "upload" etc.)
+    needle.includes("/ads/") ||
+    needle.includes("/ad/") ||
+    needle.includes("adserver") ||
+    needle.includes("1x1") ||
+    needle.includes("pixel") ||
+    needle.includes("tracker") ||
+    needle.includes("tracking") ||
+    needle.includes("analytics") ||
+    needle.includes("doubleclick") ||
+    needle.includes("feedburner") ||
+    needle.includes("spacer")
   );
 }
 

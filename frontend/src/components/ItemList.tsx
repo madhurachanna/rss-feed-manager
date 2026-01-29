@@ -189,11 +189,11 @@ export function ItemList({
                   </div>
                 )}
                 <div className="flex flex-1 flex-col p-5">
-                  <h3 className="text-base font-semibold leading-tight hover:underline">
-                      {decodeHtmlEntities(item.title) || "(untitled)"}
+                  <h3 className="text-base font-semibold leading-tight hover:underline line-clamp-2">
+                    {decodeHtmlEntities(item.title) || "(untitled)"}
                   </h3>
                   <p className="text-muted mt-2">
-                      {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
+                    {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
                   </p>
                   <p className="text-body mt-3 line-clamp-3">{stripHtml(item.summaryText || item.contentHtml || "")}</p>
                 </div>
@@ -227,11 +227,11 @@ export function ItemList({
                 >
                   <div className="flex items-start gap-4">
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-semibold leading-tight hover:underline">
-                      {decodeHtmlEntities(item.title) || "(untitled)"}
+                      <h3 className="text-base font-semibold leading-tight hover:underline line-clamp-2">
+                        {decodeHtmlEntities(item.title) || "(untitled)"}
                       </h3>
                       <p className="text-muted mt-1">
-                      {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
+                        {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
                       </p>
                       <p className="text-body mt-3 line-clamp-3">{stripHtml(item.summaryText || item.contentHtml || "")}</p>
                     </div>
@@ -269,7 +269,7 @@ export function ItemList({
                 onClick={() => onSelect(item)}
               >
                 <div className="flex flex-col">
-                  <div className="text-left font-semibold hover:underline">{decodeHtmlEntities(item.title) || "(untitled)"}</div>
+                  <div className="text-left font-semibold hover:underline line-clamp-2">{decodeHtmlEntities(item.title) || "(untitled)"}</div>
                   <p className="text-xs text-gray-500">
                     {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
                   </p>

@@ -92,7 +92,9 @@ export function Sidebar({
             onClick={() => onChangeView(item.key)}
             className={clsx(
               "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800",
-              view === item.key && "bg-gray-100 font-semibold text-accent dark:bg-gray-800",
+              view === item.key &&
+              (item.key !== "home" || (!activeFolderId && !activeFeedId)) &&
+              "bg-gray-100 font-semibold text-accent dark:bg-gray-800",
             )}
           >
             <span className="text-gray-500">{item.icon}</span>

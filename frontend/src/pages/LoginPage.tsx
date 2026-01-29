@@ -11,7 +11,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { success, info, error: logError } = useLog();
-  
+
   // Step: "email" or "otp"
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
@@ -19,7 +19,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  
+
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Countdown timer for resend
@@ -68,7 +68,7 @@ export function LoginPage() {
 
   const handleResendOTP = async () => {
     if (resendCooldown > 0) return;
-    
+
     setError("");
     setLoading(true);
     try {
@@ -91,7 +91,7 @@ export function LoginPage() {
   const handleOtpChange = (index: number, value: string) => {
     // Only allow digits
     const digit = value.replace(/\D/g, "").slice(-1);
-    
+
     const newOtp = [...otp];
     newOtp[index] = digit;
     setOtp(newOtp);
@@ -131,7 +131,7 @@ export function LoginPage() {
   const handleVerifyOTP = async (code: string) => {
     setError("");
     setLoading(true);
-    
+
     try {
       const { user, token } = await verifyOTP(email, code);
       login(token, user);
@@ -264,7 +264,7 @@ export function LoginPage() {
           >
             {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
           </Button>
-          
+
           <div>
             <Button
               variant="ghost"

@@ -127,7 +127,12 @@ a {
     border-color: var(--surface-border);
   }
   .card-hover {
-    @apply transition hover:-translate-y-0.5 hover:shadow-md;
+    @apply transition;
+  }
+  @media (hover: hover) {
+    .card-hover:hover {
+      @apply -translate-y-0.5 shadow-md;
+    }
   }
   .modal-surface {
     background-color: var(--surface-elevated);
