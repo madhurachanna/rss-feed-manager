@@ -339,6 +339,15 @@ func parseSummaryPoints(text string) []string {
 			points = append(points, line)
 		}
 	}
+	// 5. Final fallback: if we only have 1 point and it's long, try to split it into sentences
+	// This handles cases where the AI returned a single paragraph string instead of a list
+	if len(points) == 1 && len(points[0]) > 100 {
+		sentences := splitSentences(points[0])
+		if len(sentences) > 1 {
+			return cleanPoints(sentences)
+		}
+	}
+
 	return cleanPoints(points)
 }
 
@@ -367,6 +376,13 @@ func cleanPoints(points []string) []string {
 	var out []string
 	for _, point := range points {
 		point = strings.TrimSpace(point)
+
+		// Strip surrounding quotes if present
+		if len(point) > 1 && strings.HasPrefix(point, "\"") && strings.HasSuffix(point, "\"") {
+			point = point[1 : len(point)-1]
+			point = strings.TrimSpace(point)
+		}
+
 		if point == "" {
 			continue
 		}
