@@ -175,51 +175,55 @@ export function ItemList({
 
         {!showSkeleton && presentation === "cards" && (
           <div className="item-list-grid grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {safeItems.map((item) => (
-              <article
-                key={item.id}
-                className="item-card group card relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
-                onClick={() => onSelect(item)}
-              >
-                {getCover(item) ? (
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
-                    <img
-                      src={getCover(item) as string}
-                      alt=""
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                  </div>
-                ) : (
-                  <div className="aspect-[4/3] w-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 dark:from-[var(--accent)]/30 dark:to-[var(--accent)]/10" />
-                )}
-                <div className="flex flex-1 flex-col p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
-                    {decodeHtmlEntities(item.source?.title) || "Unknown"}
-                  </p>
-                  <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-2">
-                    {decodeHtmlEntities(item.title) || "(untitled)"}
-                  </h3>
-                  <p className="mt-auto pt-4 text-xs text-gray-500 dark:text-gray-400">
-                    {timeAgo(item.publishedAt)}
-                  </p>
-                </div>
-                <button
-                  className={clsx(
-                    "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200",
-                    item.state.isBookmarked
-                      ? "bg-yellow-400/90 text-yellow-900 shadow-lg"
-                      : "bg-white/80 text-gray-600 opacity-0 shadow-md group-hover:opacity-100 hover:bg-white hover:text-[var(--accent)] dark:bg-gray-900/80 dark:text-gray-300 dark:hover:bg-gray-900",
-                  )}
-                  onClick={(e) => { e.stopPropagation(); onToggleBookmark(item); }}
-                  aria-label={item.state.isBookmarked ? "Remove bookmark" : "Bookmark"}
-                  title={item.state.isBookmarked ? "Remove bookmark" : "Bookmark"}
+            {safeItems.map((item) => {
+              const cover = getCover(item);
+              return (
+                <article
+                  key={item.id}
+                  className="item-card group card relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                  onClick={() => onSelect(item)}
                 >
-                  {item.state.isBookmarked ? <BookmarkFilledIcon /> : <BookmarkIcon />}
-                </button>
-              </article>
-            ))}
+                  {cover ? (
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                      <img
+                        src={cover}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    </div>
+                  ) : null}
+                  <div className={clsx("flex flex-1 flex-col p-5", !cover && "justify-center")}>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
+                      {decodeHtmlEntities(item.source?.title) || "Unknown"}
+                    </p>
+                    <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-2">
+                      {decodeHtmlEntities(item.title) || "(untitled)"}
+                    </h3>
+                    <p className="text-body mt-2 text-sm line-clamp-2">
+                      {stripHtml(item.summaryText || item.contentHtml || "")}
+                    </p>
+                    <p className="mt-auto pt-3 text-xs text-gray-500 dark:text-gray-400">
+                      {timeAgo(item.publishedAt)}
+                    </p>
+                  </div>
+                  <button
+                    className={clsx(
+                      "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200",
+                      item.state.isBookmarked
+                        ? "bg-yellow-400/90 text-yellow-900 shadow-lg"
+                        : "bg-white/80 text-gray-600 opacity-0 shadow-md group-hover:opacity-100 hover:bg-white hover:text-[var(--accent)] dark:bg-gray-900/80 dark:text-gray-300 dark:hover:bg-gray-900",
+                    )}
+                    onClick={(e) => { e.stopPropagation(); onToggleBookmark(item); }}
+                    aria-label={item.state.isBookmarked ? "Remove bookmark" : "Bookmark"}
+                    title={item.state.isBookmarked ? "Remove bookmark" : "Bookmark"}
+                  >
+                    {item.state.isBookmarked ? <BookmarkFilledIcon /> : <BookmarkIcon />}
+                  </button>
+                </article>
+              );
+            })}
           </div>
         )}
 
