@@ -116,17 +116,14 @@ export function ItemList({
         {showSkeleton && (
           <>
             {presentation === "cards" && (
-              <div className="item-list-grid grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+              <div className="item-list-grid grid grid-cols-1 gap-5 md:grid-cols-2" aria-hidden="true">
                 {Array.from({ length: skeletonCount }).map((_, idx) => (
-                  <div key={`skeleton-card-${idx}`} className="card relative flex h-full flex-col overflow-hidden">
-                    <div className="aspect-[16/9] w-full skeleton" />
-                    <div className="flex flex-1 flex-col p-5">
-                      <div className="skeleton h-4 w-5/6 rounded-md" />
+                  <div key={`skeleton-card-${idx}`} className="card relative flex h-32 flex-row overflow-hidden">
+                    <div className="w-[60%] flex-shrink-0 skeleton" />
+                    <div className="flex flex-1 flex-col justify-center p-4">
+                      <div className="skeleton h-4 w-full rounded-md" />
+                      <div className="mt-2 skeleton h-4 w-4/5 rounded-md" />
                       <div className="mt-3 skeleton h-3 w-1/2 rounded-md" />
-                      <div className="mt-4 space-y-2">
-                        <div className="skeleton h-3 w-full rounded-md" />
-                        <div className="skeleton h-3 w-5/6 rounded-md" />
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -176,26 +173,25 @@ export function ItemList({
         )}
 
         {!showSkeleton && presentation === "cards" && (
-          <div className="item-list-grid grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="item-list-grid grid grid-cols-1 gap-5 md:grid-cols-2">
             {safeItems.map((item) => (
               <article
                 key={item.id}
-                className="item-card group card relative flex h-full cursor-pointer flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-md"
+                className="item-card group card relative flex h-full cursor-pointer flex-row overflow-hidden transition hover:-translate-y-1 hover:shadow-md"
                 onClick={() => onSelect(item)}
               >
                 {getCover(item) && (
-                  <div className="aspect-[16/9] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <div className="w-[60%] flex-shrink-0 overflow-hidden bg-gray-100 dark:bg-gray-800">
                     <img src={getCover(item) as string} alt="" className="h-full w-full object-cover" loading="lazy" />
                   </div>
                 )}
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="text-base font-semibold leading-tight hover:underline line-clamp-2">
+                <div className="flex flex-1 flex-col justify-center p-4">
+                  <h3 className="text-base font-semibold leading-snug hover:underline line-clamp-3">
                     {decodeHtmlEntities(item.title) || "(untitled)"}
                   </h3>
-                  <p className="text-muted mt-2">
+                  <p className="text-muted mt-2 text-sm">
                     {decodeHtmlEntities(item.source?.title) || "Unknown"} · {timeAgo(item.publishedAt)}
                   </p>
-                  <p className="text-body mt-3 line-clamp-3">{stripHtml(item.summaryText || item.contentHtml || "")}</p>
                 </div>
                 <button
                   className={clsx(

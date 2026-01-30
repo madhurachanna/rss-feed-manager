@@ -366,7 +366,7 @@ export function AppShell() {
             onOpenSidebar={!isDesktop ? () => setSidebarOpen(true) : undefined}
           />
 
-          <div className="app-content mx-auto w-full max-w-3xl space-y-6 pb-6">
+          <div className="app-content mx-auto w-full max-w-5xl space-y-6 pb-6">
             {view === "discover" && (
               <Discover
                 folders={(foldersQuery.data || []).filter(Boolean)}
