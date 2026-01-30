@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"rss-feed-manager/backend/internal/models"
 )
@@ -258,17 +259,29 @@ func parseSummaryPoints(text string) []string {
 	// Strip markdown code blocks if present
 	text = stripMarkdownCodeBlocks(text)
 
+	// Helper to finalize points (clean + split single heavy point)
+	finalizePoints := func(rawPoints []string) []string {
+		cleaned := cleanPoints(rawPoints)
+		if len(cleaned) == 1 && len(cleaned[0]) > 100 {
+			sentences := splitSentences(cleaned[0])
+			if len(sentences) > 1 {
+				return cleanPoints(sentences)
+			}
+		}
+		return cleaned
+	}
+
 	// Helper to try parsing JSON array
 	tryParseArray := func(input string) ([]string, bool) {
 		var points []string
 		if err := json.Unmarshal([]byte(input), &points); err == nil {
-			return cleanPoints(points), true
+			return finalizePoints(points), true
 		}
 		// Handle double-encoded JSON
 		var jsonString string
 		if err := json.Unmarshal([]byte(input), &jsonString); err == nil {
 			if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
-				return cleanPoints(points), true
+				return finalizePoints(points), true
 			}
 		}
 		return nil, false
@@ -286,10 +299,10 @@ func parseSummaryPoints(text string) []string {
 	}
 	if err := json.Unmarshal([]byte(text), &payload); err == nil {
 		if len(payload.Points) > 0 {
-			return cleanPoints(payload.Points)
+			return finalizePoints(payload.Points)
 		}
 		if len(payload.KeyPoints) > 0 {
-			return cleanPoints(payload.KeyPoints)
+			return finalizePoints(payload.KeyPoints)
 		}
 	}
 
@@ -339,16 +352,8 @@ func parseSummaryPoints(text string) []string {
 			points = append(points, line)
 		}
 	}
-	// 5. Final fallback: if we only have 1 point and it's long, try to split it into sentences
-	// This handles cases where the AI returned a single paragraph string instead of a list
-	if len(points) == 1 && len(points[0]) > 100 {
-		sentences := splitSentences(points[0])
-		if len(sentences) > 1 {
-			return cleanPoints(sentences)
-		}
-	}
 
-	return cleanPoints(points)
+	return finalizePoints(points)
 }
 
 // stripMarkdownCodeBlocks removes markdown code block wrappers and any preamble text
@@ -377,10 +382,19 @@ func cleanPoints(points []string) []string {
 	for _, point := range points {
 		point = strings.TrimSpace(point)
 
-		// Strip surrounding quotes if present
-		if len(point) > 1 && strings.HasPrefix(point, "\"") && strings.HasSuffix(point, "\"") {
-			point = point[1 : len(point)-1]
-			point = strings.TrimSpace(point)
+		// Strip surrounding quotes if present (ASCII and smart quotes)
+		if len(point) > 1 {
+			first, _ := utf8.DecodeRuneInString(point)
+			last, _ := utf8.DecodeLastRuneInString(point)
+			if (first == '"' && last == '"') ||
+				(first == '“' && last == '”') ||
+				(first == '“' && last == '"') ||
+				(first == '"' && last == '”') {
+				_, sizeFirst := utf8.DecodeRuneInString(point)
+				_, sizeLast := utf8.DecodeLastRuneInString(point)
+				point = point[sizeFirst : len(point)-sizeLast]
+				point = strings.TrimSpace(point)
+			}
 		}
 
 		if point == "" {
