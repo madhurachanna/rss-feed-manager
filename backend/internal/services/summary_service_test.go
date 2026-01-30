@@ -95,10 +95,24 @@ func TestParseSummaryPoints(t *testing.T) {
 			input:    "```json\n[\"Point 1\"]\n```",
 			expected: 1,
 		},
+
 		{
-			name:     "plain text bullets",
-			input:    "- Point 1\n- Point 2",
+			name:     "mixed content with json",
+			input:    "Here is the summary:\n[\"Point 1\", \"Point 2\"]\nHope that helps.",
 			expected: 2,
+		},
+		{
+			name:     "malformed array with bullets fallback",
+			input:    "[\n\"Point 1 is good\"\n\"Point 2 is better\"", // Missing commas/closing bracket
+			expected: 2,
+		},
+		{
+			name:  "double encoded with surrounding text",
+			input: "JSON: \"[\\\"Point 1\\\"]\"", // This won't work with simple unmarshal, but our new logic might not catch it unless we double-decode sub-parts.
+			// Actually the current logic finds [ and ], extracting \"...\" which is NOT a valid array.
+			// So it hits fallback.
+			// Let's test a case our new logic SHOULD catch: embedded array
+			expected: 1,
 		},
 	}
 

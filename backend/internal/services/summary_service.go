@@ -258,23 +258,28 @@ func parseSummaryPoints(text string) []string {
 	// Strip markdown code blocks if present
 	text = stripMarkdownCodeBlocks(text)
 
-	// Try parsing as JSON array directly
-	var points []string
-	if err := json.Unmarshal([]byte(text), &points); err == nil {
-		return cleanPoints(points)
-	}
-
-	// Handle double-encoded JSON (Gemini sometimes returns a string containing JSON)
-	// e.g., "\"[\\\"Point one\\\", \\\"Point two\\\"]\""
-	var jsonString string
-	if err := json.Unmarshal([]byte(text), &jsonString); err == nil {
-		// Successfully decoded as string, try parsing the inner content
-		if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
-			return cleanPoints(points)
+	// Helper to try parsing JSON array
+	tryParseArray := func(input string) ([]string, bool) {
+		var points []string
+		if err := json.Unmarshal([]byte(input), &points); err == nil {
+			return cleanPoints(points), true
 		}
+		// Handle double-encoded JSON
+		var jsonString string
+		if err := json.Unmarshal([]byte(input), &jsonString); err == nil {
+			if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
+				return cleanPoints(points), true
+			}
+		}
+		return nil, false
 	}
 
-	// Try parsing as object with points/key_points field
+	// 1. Try parsing full text
+	if points, ok := tryParseArray(text); ok {
+		return points
+	}
+
+	// 2. Try parsing as object with points/key_points field
 	var payload struct {
 		Points    []string `json:"points"`
 		KeyPoints []string `json:"key_points"`
@@ -288,8 +293,20 @@ func parseSummaryPoints(text string) []string {
 		}
 	}
 
-	// Fallback: parse as bullet points / line-separated text
+	// 3. Try to find a JSON array within the text
+	// This handles cases like "Here are the points: [...]" or code blocks without fences
+	openIdx := strings.Index(text, "[")
+	closeIdx := strings.LastIndex(text, "]")
+	if openIdx != -1 && closeIdx != -1 && closeIdx > openIdx {
+		candidate := text[openIdx : closeIdx+1]
+		if points, ok := tryParseArray(candidate); ok {
+			return points
+		}
+	}
+
+	// 4. Fallback: parse as bullet points / line-separated text
 	lines := strings.Split(text, "\n")
+	var points []string
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if line == "" {
@@ -299,8 +316,25 @@ func parseSummaryPoints(text string) []string {
 		if upper == "KEY POINTS" || upper == "KEY POINTS:" {
 			continue
 		}
-		line = strings.TrimLeft(line, "-•*0123456789. ")
+		// Also strip [ and ] if they appear as standalone lines or start of line
+		line = strings.TrimLeft(line, "-•*0123456789. []")
 		line = strings.TrimSpace(line)
+
+		// Heuristic: strip JSON string artifacts (surrounding quotes and trailing commas)
+		// e.g. "Point 1", -> Point 1
+		if len(line) > 2 && strings.HasPrefix(line, "\"") {
+			if strings.HasSuffix(line, "\",") {
+				line = line[1 : len(line)-2]
+			} else if strings.HasSuffix(line, "\"") {
+				line = line[1 : len(line)-1]
+			}
+		}
+
+		// Check if line is just a closing bracket or comma
+		if line == "]" || line == "]," {
+			continue
+		}
+
 		if line != "" {
 			points = append(points, line)
 		}
