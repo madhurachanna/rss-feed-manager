@@ -67,4 +67,6 @@ export type AuthResponse = {
 
 export type AiSummaryResult = {
   points: string[];
+  source?: "ai" | "fallback";
+  reason?: string;
 };

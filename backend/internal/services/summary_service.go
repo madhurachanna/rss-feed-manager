@@ -59,12 +59,18 @@ func NewSummaryService() *SummaryService {
 }
 
 func (s *SummaryService) Summarize(ctx context.Context, item models.Item) (models.SummaryResult, error) {
+	// Build fallback result from existing content
+	buildFallback := func(reason string) models.SummaryResult {
+		points := extractFallbackPoints(item)
+		return models.SummaryResult{Points: points, Source: "fallback", Reason: reason}
+	}
+
 	if s.apiKey == "" {
-		return models.SummaryResult{}, errors.New("GEMINI_API_KEY is empty")
+		return buildFallback("missing_api_key"), nil
 	}
 	if item.ID > 0 {
 		if cached, ok := s.getCache(item.ID); ok {
-			return models.SummaryResult{Points: cached}, nil
+			return models.SummaryResult{Points: cached, Source: "ai"}, nil
 		}
 	}
 	content := buildSummaryContent(item)
@@ -94,7 +100,7 @@ Content: %s`, title, source, content)
 	}
 	reqBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return models.SummaryResult{}, err
+		return buildFallback("marshal_error"), nil
 	}
 
 	geminiCtx, cancel := context.WithTimeout(context.Background(), s.timeout)
@@ -105,12 +111,12 @@ Content: %s`, title, source, content)
 		url := fmt.Sprintf("https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s", model, s.apiKey)
 		req, err := http.NewRequestWithContext(geminiCtx, http.MethodPost, url, bytes.NewReader(reqBytes))
 		if err != nil {
-			return models.SummaryResult{}, err
+			return buildFallback("request_error"), nil
 		}
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := s.client.Do(req)
 		if err != nil {
-			return models.SummaryResult{}, err
+			return buildFallback("network_error"), nil
 		}
 		respBytes, _ := io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
@@ -120,7 +126,8 @@ Content: %s`, title, source, content)
 			if isGeminiModelNotFound(lastErr) {
 				continue
 			}
-			return models.SummaryResult{}, lastErr
+			// Return fallback for quota/rate limit errors
+			return buildFallback("gemini_error"), nil
 		}
 
 		var res struct {
@@ -133,24 +140,24 @@ Content: %s`, title, source, content)
 			} `json:"candidates"`
 		}
 		if err := json.Unmarshal(respBytes, &res); err != nil {
-			return models.SummaryResult{}, err
+			return buildFallback("parse_error"), nil
 		}
 		if len(res.Candidates) == 0 || len(res.Candidates[0].Content.Parts) == 0 {
-			return models.SummaryResult{}, errors.New("empty gemini response")
+			return buildFallback("empty_response"), nil
 		}
 		points := parseSummaryPoints(res.Candidates[0].Content.Parts[0].Text)
 		if len(points) == 0 {
-			return models.SummaryResult{}, errors.New("gemini response did not include summary points")
+			return buildFallback("no_points"), nil
 		}
 		if item.ID > 0 {
 			s.setCache(item.ID, points)
 		}
-		return models.SummaryResult{Points: points}, nil
+		return models.SummaryResult{Points: points, Source: "ai"}, nil
 	}
 	if lastErr != nil {
-		return models.SummaryResult{}, lastErr
+		return buildFallback("gemini_error"), nil
 	}
-	return models.SummaryResult{}, errors.New("gemini request failed")
+	return buildFallback("request_failed"), nil
 }
 
 func (s *SummaryService) getCache(itemID int64) ([]string, bool) {
@@ -188,6 +195,56 @@ func buildSummaryContent(item models.Item) string {
 		text = text[:8000] + "..."
 	}
 	return text
+}
+
+// extractFallbackPoints extracts key sentences from article content as fallback
+func extractFallbackPoints(item models.Item) []string {
+	// Try summary text first, then content
+	text := strings.TrimSpace(item.SummaryText)
+	if text == "" {
+		text = strings.TrimSpace(stripHTML(item.ContentHTML))
+	}
+	if text == "" {
+		return []string{}
+	}
+
+	// Split into sentences and pick first 3-4 meaningful ones
+	sentences := splitSentences(text)
+	var points []string
+	for _, s := range sentences {
+		s = strings.TrimSpace(s)
+		// Skip very short sentences or common filler
+		if len(s) < 30 || len(s) > 250 {
+			continue
+		}
+		points = append(points, s)
+		if len(points) >= 4 {
+			break
+		}
+	}
+	return points
+}
+
+// splitSentences splits text into sentences based on punctuation
+func splitSentences(text string) []string {
+	// Simple sentence splitting on . ! ?
+	var sentences []string
+	var current strings.Builder
+	for _, r := range text {
+		current.WriteRune(r)
+		if r == '.' || r == '!' || r == '?' {
+			s := strings.TrimSpace(current.String())
+			if s != "" {
+				sentences = append(sentences, s)
+			}
+			current.Reset()
+		}
+	}
+	// Add any remaining text
+	if s := strings.TrimSpace(current.String()); s != "" {
+		sentences = append(sentences, s)
+	}
+	return sentences
 }
 
 func normalizeWhitespace(text string) string {

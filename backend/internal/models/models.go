@@ -75,4 +75,6 @@ type ReaderResult struct {
 
 type SummaryResult struct {
 	Points []string `json:"points"`
+	Source string   `json:"source,omitempty"`
+	Reason string   `json:"reason,omitempty"`
 }

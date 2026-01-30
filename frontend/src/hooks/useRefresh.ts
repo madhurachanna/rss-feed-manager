@@ -21,6 +21,7 @@ export function useRefresh({ getFolderName, getFeedTitle }: RefreshOptions) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["items"] });
             queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
             success("refresh", "All feeds refreshed", "Your feeds are now up to date");
         },
         onError: (err) => {
@@ -37,6 +38,7 @@ export function useRefresh({ getFolderName, getFeedTitle }: RefreshOptions) {
         },
         onSuccess: (_data, _id, context) => {
             queryClient.invalidateQueries({ queryKey: ["items"] });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
             success("refresh", `${context?.folderName} refreshed`, "New items have been fetched");
         },
         onError: (err, _id, context) => {
@@ -49,6 +51,7 @@ export function useRefresh({ getFolderName, getFeedTitle }: RefreshOptions) {
         onMutate: (id) => ({ feedTitle: getFeedTitle(id) }),
         onSuccess: (_data, _id, context) => {
             queryClient.invalidateQueries({ queryKey: ["items"] });
+            queryClient.invalidateQueries({ queryKey: ["folders"] });
             success("refresh", "Feed refreshed", `${context?.feedTitle} is now up to date`);
         },
         onError: (err, _id, context) => {
