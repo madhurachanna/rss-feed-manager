@@ -50,4 +50,6 @@ jobs:
             cd ~/rss-feed-manager
             git pull origin main
             docker-compose down
+            # Free up space by removing unused images and containers
+            docker system prune -af
             docker-compose up -d --build
