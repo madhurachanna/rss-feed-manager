@@ -68,6 +68,7 @@ type ReaderResult struct {
 	SourceURL     string `json:"sourceUrl,omitempty"`
 	Excerpt       string `json:"excerpt,omitempty"`
 	PublishedTime string `json:"publishedTime,omitempty"`
+	Image         string `json:"image,omitempty"`
 	WordCount     int    `json:"wordCount"`
 	Fallback      bool   `json:"fallback"`
 	Error         string `json:"error,omitempty"`

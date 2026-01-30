@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/mmcdole/gofeed"
 	ext "github.com/mmcdole/gofeed/extensions"
-	"github.com/PuerkitoBio/goquery"
 
 	"rss-feed-manager/backend/internal/feeds"
 	"rss-feed-manager/backend/internal/models"
@@ -324,7 +324,7 @@ func (s *FeedService) RefreshAll(ctx context.Context, userID int64) error {
 	if err := rows.Close(); err != nil {
 		return err
 	}
-	
+
 	// Refresh all feeds, continuing even if some fail
 	for _, feedID := range feedIDs {
 		// Continue even if individual feeds fail - don't let one bad feed block others
@@ -670,6 +670,18 @@ func collectMedia(entry *gofeed.Item, baseURL string) []models.Media {
 	}
 
 	appendMediaFromExtensions(&media, entry.Extensions, baseURL)
+
+	// If no media found yet, try to extract images from HTML content
+	if len(media) == 0 {
+		htmlContent := entry.Content
+		if htmlContent == "" {
+			htmlContent = entry.Description
+		}
+		if imgURL := extractFirstImage(htmlContent, baseURL); imgURL != "" {
+			appendMedia(imgURL, "", "image/*")
+		}
+	}
+
 	return dedupeMedia(media)
 }
 
@@ -742,6 +754,44 @@ func looksLikeImageURL(raw string) bool {
 		strings.HasSuffix(lower, ".png") ||
 		strings.HasSuffix(lower, ".gif") ||
 		strings.HasSuffix(lower, ".webp")
+}
+
+// extractFirstImage extracts the first valid image URL from HTML content
+func extractFirstImage(html, baseURL string) string {
+	if html == "" {
+		return ""
+	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		return ""
+	}
+	var result string
+	doc.Find("img[src]").EachWithBreak(func(_ int, s *goquery.Selection) bool {
+		src := strings.TrimSpace(s.AttrOr("src", ""))
+		if src == "" {
+			return true
+		}
+		// Skip likely avatars, tracking pixels, icons
+		lower := strings.ToLower(src)
+		if strings.Contains(lower, "avatar") ||
+			strings.Contains(lower, "author") ||
+			strings.Contains(lower, "profile") ||
+			strings.Contains(lower, "logo") ||
+			strings.Contains(lower, "icon") ||
+			strings.Contains(lower, "1x1") ||
+			strings.Contains(lower, "pixel") ||
+			strings.Contains(lower, "spacer") ||
+			strings.Contains(lower, "tracking") ||
+			strings.Contains(lower, "feedburner") {
+			return true
+		}
+		if baseURL != "" {
+			src = feeds.ResolveRelative(baseURL, src)
+		}
+		result = src
+		return false // found, stop
+	})
+	return result
 }
 
 func dedupeMedia(media []models.Media) []models.Media {

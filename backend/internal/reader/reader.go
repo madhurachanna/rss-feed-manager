@@ -91,6 +91,7 @@ func (c *Client) Extract(ctx context.Context, targetURL string) (models.ReaderRe
 		SourceURL:     targetURL,
 		Excerpt:       excerpt,
 		PublishedTime: publishedTime,
+		Image:         article.Image,
 		WordCount:     wordCount,
 		Fallback:      isFallback,
 		Error:         errorMsg,

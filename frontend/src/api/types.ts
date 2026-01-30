@@ -49,6 +49,7 @@ export type ReaderResult = {
   sourceUrl?: string;
   excerpt?: string;
   publishedTime?: string;
+  image?: string;
   wordCount: number;
   fallback?: boolean;
   error?: string;
