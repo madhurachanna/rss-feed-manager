@@ -399,7 +399,7 @@ export function AppShell() {
                 {showHomeRows ? (
                   <HomeCategoryRows
                     rows={homeRows}
-                    loading={itemsQuery.isFetching || isRefreshingFeed}
+                    loading={itemsQuery.isLoading || itemsQuery.isFetching || isRefreshingFeed}
                     onSelect={(item) => setSelectedItem(item)}
                     onToggleBookmark={(item) => bookmarkMut.mutate({ id: item.id, set: !item.state.isBookmarked })}
                   />
@@ -411,7 +411,7 @@ export function AppShell() {
                     onToggleBookmark={(item) => bookmarkMut.mutate({ id: item.id, set: !item.state.isBookmarked })}
                     hasMore={hasMore}
                     onLoadMore={loadMore}
-                    loading={itemsQuery.isFetchingNextPage || itemsQuery.isFetching || isRefreshingFeed}
+                    loading={itemsQuery.isLoading || itemsQuery.isFetchingNextPage || itemsQuery.isFetching || isRefreshingFeed}
                     autoLoad
                   />
                 )}
