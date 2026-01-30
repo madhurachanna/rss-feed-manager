@@ -88,9 +88,8 @@ Content: %s`, title, source, content)
 			{"parts": []map[string]string{{"text": prompt}}},
 		},
 		"generationConfig": map[string]interface{}{
-			"temperature":      s.temperature,
-			"maxOutputTokens":  s.maxOutputTokens,
-			"responseMimeType": "application/json",
+			"temperature":     s.temperature,
+			"maxOutputTokens": s.maxOutputTokens,
 		},
 	}
 	reqBytes, err := json.Marshal(reqBody)
