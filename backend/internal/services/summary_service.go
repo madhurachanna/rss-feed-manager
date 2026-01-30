@@ -31,9 +31,127 @@ type SummaryService struct {
 const (
 	defaultSummaryTimeout     = 20 * time.Second
 	defaultSummaryTemperature = 0.2
-	defaultSummaryMaxTokens   = 320
+	defaultSummaryMaxTokens   = 800
 	defaultSummaryCacheTTL    = 30 * time.Minute
 )
+
+// ... (other parts of file remain unchanged)
+
+func parseSummaryPoints(text string) []string {
+	text = strings.TrimSpace(text)
+	text = stripMarkdownCodeBlocks(text)
+
+	// Helper to finalize points (clean + split single heavy point)
+	finalizePoints := func(rawPoints []string) []string {
+		cleaned := cleanPoints(rawPoints)
+		if len(cleaned) == 1 && len(cleaned[0]) > 100 {
+			sentences := splitSentences(cleaned[0])
+			if len(sentences) > 1 {
+				return cleanPoints(sentences)
+			}
+		}
+		return cleaned
+	}
+
+	// 1. Attempt to parse full text as JSON directly (covers double-encoded cases)
+	// This handles standard ["..."] and double-encoded "[\"... \"]"
+	// Helper to try parsing JSON array
+	tryParseArray := func(input string) ([]string, bool) {
+		var points []string
+		if err := json.Unmarshal([]byte(input), &points); err == nil {
+			return finalizePoints(points), true
+		}
+		// Handle double-encoded JSON
+		var jsonString string
+		if err := json.Unmarshal([]byte(input), &jsonString); err == nil {
+			if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
+				return finalizePoints(points), true
+			}
+		}
+		return nil, false
+	}
+
+	if points, ok := tryParseArray(text); ok {
+		return points
+	}
+
+	// 2. Attempt to extract and parse JSON array
+	// Look for the outermost square brackets
+	start := strings.Index(text, "[")
+	end := strings.LastIndex(text, "]")
+
+	if start != -1 && end != -1 && end > start {
+		jsonPart := text[start : end+1]
+		var points []string
+
+		// Try direct unmarshal
+		if err := json.Unmarshal([]byte(jsonPart), &points); err == nil {
+			return finalizePoints(points)
+		}
+
+		// Try double-encoded (string containing JSON)
+		var jsonString string
+		if err := json.Unmarshal([]byte(jsonPart), &jsonString); err == nil {
+			if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
+				return finalizePoints(points)
+			}
+		}
+	}
+
+	// 2. Fallback: Parse line-by-line
+	// This handles cases where JSON is malformed or missing
+	lines := strings.Split(text, "\n")
+	var points []string
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		// heuristic: skip "Key Points:" headers
+		upper := strings.ToUpper(line)
+		if strings.HasPrefix(upper, "KEY POINTS") {
+			continue
+		}
+
+		// heuristic: strip bullets, numbers, and brackets from start
+		line = strings.TrimLeft(line, "-•*0123456789. []")
+		line = strings.TrimSpace(line)
+
+		// heuristic: strip JSON string artifacts (surrounding quotes and trailing commas)
+		if len(line) > 1 {
+			// Check for surrounding quotes (ASCII and smart)
+			first, _ := utf8.DecodeRuneInString(line)
+			if first == '"' || first == '“' {
+				// Potential quoted string
+				if strings.HasSuffix(line, "\",") {
+					line = line[:len(line)-2]
+				} else if strings.HasSuffix(line, "\"") { // ASCII quote
+					line = line[:len(line)-1]
+				} else if strings.HasSuffix(line, "”") { // Smart quote
+					line = line[:len(line)-len("”")] // ” is multibyte
+				} else if strings.HasSuffix(line, "”,") {
+					line = line[:len(line)-len("”,")]
+				}
+
+				// Re-trim start quote
+				_, sizeFirst := utf8.DecodeRuneInString(line)
+				line = line[sizeFirst:]
+			}
+		}
+
+		line = strings.TrimSpace(line)
+
+		// Skip if line is just a closing bracket or comma
+		if line == "]" || line == "]," || line == "" {
+			continue
+		}
+
+		points = append(points, line)
+	}
+
+	return finalizePoints(points)
+}
 
 type summaryCacheEntry struct {
 	points    []string
@@ -251,109 +369,6 @@ func splitSentences(text string) []string {
 func normalizeWhitespace(text string) string {
 	fields := strings.Fields(text)
 	return strings.TrimSpace(strings.Join(fields, " "))
-}
-
-func parseSummaryPoints(text string) []string {
-	text = strings.TrimSpace(text)
-
-	// Strip markdown code blocks if present
-	text = stripMarkdownCodeBlocks(text)
-
-	// Helper to finalize points (clean + split single heavy point)
-	finalizePoints := func(rawPoints []string) []string {
-		cleaned := cleanPoints(rawPoints)
-		if len(cleaned) == 1 && len(cleaned[0]) > 100 {
-			sentences := splitSentences(cleaned[0])
-			if len(sentences) > 1 {
-				return cleanPoints(sentences)
-			}
-		}
-		return cleaned
-	}
-
-	// Helper to try parsing JSON array
-	tryParseArray := func(input string) ([]string, bool) {
-		var points []string
-		if err := json.Unmarshal([]byte(input), &points); err == nil {
-			return finalizePoints(points), true
-		}
-		// Handle double-encoded JSON
-		var jsonString string
-		if err := json.Unmarshal([]byte(input), &jsonString); err == nil {
-			if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
-				return finalizePoints(points), true
-			}
-		}
-		return nil, false
-	}
-
-	// 1. Try parsing full text
-	if points, ok := tryParseArray(text); ok {
-		return points
-	}
-
-	// 2. Try parsing as object with points/key_points field
-	var payload struct {
-		Points    []string `json:"points"`
-		KeyPoints []string `json:"key_points"`
-	}
-	if err := json.Unmarshal([]byte(text), &payload); err == nil {
-		if len(payload.Points) > 0 {
-			return finalizePoints(payload.Points)
-		}
-		if len(payload.KeyPoints) > 0 {
-			return finalizePoints(payload.KeyPoints)
-		}
-	}
-
-	// 3. Try to find a JSON array within the text
-	// This handles cases like "Here are the points: [...]" or code blocks without fences
-	openIdx := strings.Index(text, "[")
-	closeIdx := strings.LastIndex(text, "]")
-	if openIdx != -1 && closeIdx != -1 && closeIdx > openIdx {
-		candidate := text[openIdx : closeIdx+1]
-		if points, ok := tryParseArray(candidate); ok {
-			return points
-		}
-	}
-
-	// 4. Fallback: parse as bullet points / line-separated text
-	lines := strings.Split(text, "\n")
-	var points []string
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		upper := strings.ToUpper(line)
-		if upper == "KEY POINTS" || upper == "KEY POINTS:" {
-			continue
-		}
-		// Also strip [ and ] if they appear as standalone lines or start of line
-		line = strings.TrimLeft(line, "-•*0123456789. []")
-		line = strings.TrimSpace(line)
-
-		// Heuristic: strip JSON string artifacts (surrounding quotes and trailing commas)
-		// e.g. "Point 1", -> Point 1
-		if len(line) > 2 && strings.HasPrefix(line, "\"") {
-			if strings.HasSuffix(line, "\",") {
-				line = line[1 : len(line)-2]
-			} else if strings.HasSuffix(line, "\"") {
-				line = line[1 : len(line)-1]
-			}
-		}
-
-		// Check if line is just a closing bracket or comma
-		if line == "]" || line == "]," {
-			continue
-		}
-
-		if line != "" {
-			points = append(points, line)
-		}
-	}
-
-	return finalizePoints(points)
 }
 
 // stripMarkdownCodeBlocks removes markdown code block wrappers and any preamble text
