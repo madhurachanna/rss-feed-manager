@@ -119,7 +119,7 @@ export function ItemList({
               <div className="item-list-grid grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
                 {Array.from({ length: skeletonCount }).map((_, idx) => (
                   <div key={`skeleton-card-${idx}`} className="card relative flex flex-col overflow-hidden rounded-2xl">
-                    <div className="aspect-[16/9] w-full skeleton" />
+                    <div className="aspect-[4/3] w-full skeleton" />
                     <div className="flex flex-1 flex-col p-4">
                       <div className="skeleton h-3 w-1/3 rounded-md" />
                       <div className="mt-3 skeleton h-4 w-full rounded-md" />
@@ -182,7 +182,7 @@ export function ItemList({
                 onClick={() => onSelect(item)}
               >
                 {getCover(item) ? (
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                     <img
                       src={getCover(item) as string}
                       alt=""
@@ -192,16 +192,16 @@ export function ItemList({
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   </div>
                 ) : (
-                  <div className="aspect-[16/9] w-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 dark:from-[var(--accent)]/30 dark:to-[var(--accent)]/10" />
+                  <div className="aspect-[4/3] w-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 dark:from-[var(--accent)]/30 dark:to-[var(--accent)]/10" />
                 )}
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col p-5">
                   <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
                     {decodeHtmlEntities(item.source?.title) || "Unknown"}
                   </p>
-                  <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-3">
+                  <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-2">
                     {decodeHtmlEntities(item.title) || "(untitled)"}
                   </h3>
-                  <p className="mt-auto pt-3 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="mt-auto pt-4 text-xs text-gray-500 dark:text-gray-400">
                     {timeAgo(item.publishedAt)}
                   </p>
                 </div>
