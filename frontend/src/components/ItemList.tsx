@@ -180,7 +180,7 @@ export function ItemList({
               return (
                 <article
                   key={item.id}
-                  className="item-card group card relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+                  className="item-card group card relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl shadow-sm transition-all duration-300 lg:hover:-translate-y-2 lg:hover:shadow-xl"
                   onClick={() => onSelect(item)}
                 >
                   {cover ? (
@@ -188,17 +188,17 @@ export function ItemList({
                       <img
                         src={cover}
                         alt=""
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="h-full w-full object-cover transition-transform duration-500 lg:group-hover:scale-110"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 transition-opacity duration-300 lg:group-hover:opacity-100" />
                     </div>
                   ) : null}
                   <div className={clsx("flex flex-1 flex-col p-5", !cover && "justify-center")}>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[var(--accent)]">
                       {decodeHtmlEntities(item.source?.title) || "Unknown"}
                     </p>
-                    <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-2">
+                    <h3 className="mt-2 text-base font-bold leading-snug text-gray-900 transition-colors lg:group-hover:text-[var(--accent)] dark:text-gray-100 line-clamp-2">
                       {decodeHtmlEntities(item.title) || "(untitled)"}
                     </h3>
                     <p className="text-body mt-2 text-sm line-clamp-2">
@@ -213,7 +213,7 @@ export function ItemList({
                       "absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200",
                       item.state.isBookmarked
                         ? "bg-yellow-400/90 text-yellow-900 shadow-lg"
-                        : "bg-white/80 text-gray-600 opacity-0 shadow-md group-hover:opacity-100 hover:bg-white hover:text-[var(--accent)] dark:bg-gray-900/80 dark:text-gray-300 dark:hover:bg-gray-900",
+                        : "bg-white/80 text-gray-600 shadow-md opacity-100 lg:opacity-0 lg:group-hover:opacity-100 hover:bg-white hover:text-[var(--accent)] dark:bg-gray-900/80 dark:text-gray-300 dark:hover:bg-gray-900",
                     )}
                     onClick={(e) => { e.stopPropagation(); onToggleBookmark(item); }}
                     aria-label={item.state.isBookmarked ? "Remove bookmark" : "Bookmark"}

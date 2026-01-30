@@ -144,7 +144,7 @@ function RowCard({ item, onSelect, onToggleBookmark }: { item: Item; onSelect: (
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
         <FeedImage
           src={cover}
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-300 lg:group-hover:scale-105"
           onError={() => setImgError(true)}
         />
         <button
@@ -152,7 +152,7 @@ function RowCard({ item, onSelect, onToggleBookmark }: { item: Item; onSelect: (
             "absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full shadow-sm transition-opacity",
             item.state.isBookmarked
               ? "bg-yellow-200 text-yellow-800 opacity-100 dark:bg-yellow-700 dark:text-yellow-50"
-              : "bg-white/90 text-gray-600 opacity-0 group-hover:opacity-100 dark:bg-gray-800/90 dark:text-gray-300"
+              : "bg-white/90 text-gray-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 dark:bg-gray-800/90 dark:text-gray-300"
           )}
           onClick={(e) => { e.stopPropagation(); onToggleBookmark(); }}
         >
@@ -163,7 +163,7 @@ function RowCard({ item, onSelect, onToggleBookmark }: { item: Item; onSelect: (
         <p className="text-xs font-medium text-[var(--accent)]">
           {decodeHtmlEntities(item.source?.title)}
         </p>
-        <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug group-hover:text-[var(--accent)]">
+        <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug lg:group-hover:text-[var(--accent)]">
           {decodeHtmlEntities(item.title)}
         </h3>
         <p className="text-muted mt-1 text-xs">{timeAgo(item.publishedAt)}</p>

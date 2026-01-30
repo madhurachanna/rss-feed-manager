@@ -38,6 +38,7 @@ body {
   line-height: 1.6;
   letter-spacing: -0.1px;
   user-select: none;
+  overflow-x: hidden;
 }
 
 a {
@@ -76,6 +77,7 @@ a {
     transform: scale(0.98);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -87,6 +89,7 @@ a {
     transform: scale(1);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;
@@ -97,6 +100,7 @@ a {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }
@@ -106,68 +110,87 @@ a {
   .page-title {
     @apply text-2xl font-semibold text-gray-900 dark:text-gray-100;
   }
+
   .page-subtitle {
     @apply text-xs uppercase tracking-wide text-gray-500;
   }
+
   .section-title {
     @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
   }
+
   .section-subtitle {
     @apply text-sm text-gray-500;
   }
+
   .text-body {
     @apply text-sm text-gray-700 dark:text-gray-200;
   }
+
   .text-muted {
     @apply text-xs text-gray-500;
   }
+
   .card {
     @apply rounded-2xl border shadow-sm;
     background-color: var(--surface);
     border-color: var(--surface-border);
   }
+
   .card-hover {
     @apply transition;
   }
+
   @media (hover: hover) {
     .card-hover:hover {
       @apply -translate-y-0.5 shadow-md;
     }
   }
+
   .modal-surface {
     background-color: var(--surface-elevated);
   }
+
   /* Legacy button classes - prefer using Button component from ui.tsx */
   .btn-primary {
     @apply rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors;
     background-color: var(--accent);
   }
+
   .btn-primary:hover {
     background-color: var(--accent-hover);
   }
+
   .btn-primary:focus {
     @apply outline-none ring-2 ring-offset-1;
     --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
   }
+
   .btn-primary:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
+
   .btn-ghost {
     @apply rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800;
   }
+
   .btn-ghost:focus {
     @apply outline-none ring-2 ring-offset-1;
     --tw-ring-color: color-mix(in srgb, var(--accent) 40%, transparent);
   }
+
   .btn-ghost:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
+
   .text-accent {
     color: var(--accent);
   }
+
   .bg-accent-soft {
     background-color: var(--accent-soft);
   }
+
   .skeleton {
     @apply relative overflow-hidden;
     background-color: var(--skeleton-base);
