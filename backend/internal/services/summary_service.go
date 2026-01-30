@@ -258,10 +258,23 @@ func parseSummaryPoints(text string) []string {
 	// Strip markdown code blocks if present
 	text = stripMarkdownCodeBlocks(text)
 
+	// Try parsing as JSON array directly
 	var points []string
 	if err := json.Unmarshal([]byte(text), &points); err == nil {
 		return cleanPoints(points)
 	}
+
+	// Handle double-encoded JSON (Gemini sometimes returns a string containing JSON)
+	// e.g., "\"[\\\"Point one\\\", \\\"Point two\\\"]\""
+	var jsonString string
+	if err := json.Unmarshal([]byte(text), &jsonString); err == nil {
+		// Successfully decoded as string, try parsing the inner content
+		if err := json.Unmarshal([]byte(jsonString), &points); err == nil {
+			return cleanPoints(points)
+		}
+	}
+
+	// Try parsing as object with points/key_points field
 	var payload struct {
 		Points    []string `json:"points"`
 		KeyPoints []string `json:"key_points"`
@@ -274,6 +287,8 @@ func parseSummaryPoints(text string) []string {
 			return cleanPoints(payload.KeyPoints)
 		}
 	}
+
+	// Fallback: parse as bullet points / line-separated text
 	lines := strings.Split(text, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
