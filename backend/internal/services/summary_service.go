@@ -198,6 +198,10 @@ func normalizeWhitespace(text string) string {
 
 func parseSummaryPoints(text string) []string {
 	text = strings.TrimSpace(text)
+
+	// Strip markdown code blocks if present
+	text = stripMarkdownCodeBlocks(text)
+
 	var points []string
 	if err := json.Unmarshal([]byte(text), &points); err == nil {
 		return cleanPoints(points)
@@ -231,6 +235,26 @@ func parseSummaryPoints(text string) []string {
 		}
 	}
 	return cleanPoints(points)
+}
+
+// stripMarkdownCodeBlocks removes markdown code block wrappers and any preamble text
+func stripMarkdownCodeBlocks(text string) string {
+	// Check if there's a code block in the response
+	if idx := strings.Index(text, "```"); idx != -1 {
+		// Find the start of the code block content
+		afterOpenFence := text[idx+3:]
+		// Skip the language identifier (e.g., "json")
+		if nlIdx := strings.Index(afterOpenFence, "\n"); nlIdx != -1 {
+			afterOpenFence = afterOpenFence[nlIdx+1:]
+		}
+		// Find the closing fence
+		if closeIdx := strings.Index(afterOpenFence, "```"); closeIdx != -1 {
+			text = strings.TrimSpace(afterOpenFence[:closeIdx])
+		} else {
+			text = strings.TrimSpace(afterOpenFence)
+		}
+	}
+	return text
 }
 
 func cleanPoints(points []string) []string {
