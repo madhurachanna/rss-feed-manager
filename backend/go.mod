@@ -5,7 +5,6 @@ go 1.23
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/go-chi/cors v1.2.1
 	github.com/go-chi/httprate v0.14.0
 	github.com/go-shiori/go-readability v0.0.0-20251205110129-5db1dc9836f0
 	github.com/joho/godotenv v1.5.1

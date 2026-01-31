@@ -26,6 +26,7 @@ type Config struct {
 	TopNewsService      *services.TopNewsService
 	SummaryService      *services.SummaryService
 	AuthService         *services.AuthService
+	OPMLService         *services.OPMLService
 	Reader              *reader.Client
 	FrontendOrigin      string
 	ReaderRatePerMinute int
@@ -58,6 +59,14 @@ func NewRouter(cfg Config) http.Handler {
 		r.Post("/verify-otp", authHandler.VerifyOTP)     // New OTP verification
 		r.Get("/verify", authHandler.VerifyMagicLink)    // Legacy magic link (kept for compatibility)
 		r.Post("/logout", authHandler.Logout)
+	})
+
+	r.Group(func(r chi.Router) {
+		r.Use(authHandler.AuthMiddleware)
+		r.Route("/api/opml", func(r chi.Router) {
+			r.Post("/import", h.importOPML)
+			r.Get("/export", h.exportOPML)
+		})
 	})
 
 	// Discover is public
