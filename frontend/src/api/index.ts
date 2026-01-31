@@ -141,3 +141,18 @@ export async function resolveDiscover(url: string) {
   const res = await api.post("/api/discover/resolve", { url });
   return res.data as { feeds: { title: string; url: string }[] };
 }
+export const importOPML = async (file: File): Promise<{ message: string; importedCount: number }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await api.post("/api/opml/import", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+};
+
+export const downloadOPML = async (): Promise<Blob> => {
+  const res = await api.get<Blob>("/api/opml/export", { responseType: "blob" });
+  return res.data;
+};

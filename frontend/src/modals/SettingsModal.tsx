@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ACCENTS, AccentKey, THEME_PRESETS, ThemePreset, useTheme } from "../hooks/useTheme";
 import { BaseModal } from "./BaseModal";
-import { fetchSettings, updateSettings } from "../api";
+import { fetchSettings, updateSettings, importOPML, downloadOPML } from "../api";
 import { useLog } from "../hooks/useLog";
 import { extractErrorMessage } from "../services/LogService";
 import { Button, Select, Radio, FormGroup } from "../components/ui";
@@ -35,11 +35,15 @@ const FONT_OPTIONS = [
 export function SettingsModal({ open, onClose }: Props) {
   const { theme, setTheme, fontFamily, setFontFamily, fontSize, setFontSize, accent, setAccent } = useTheme();
   const { success, error: logError } = useLog();
-  const [section, setSection] = useState<"general" | "appearance" | "reading" | "storage">("general");
+  const [section, setSection] = useState<"general" | "appearance" | "reading" | "storage" | "data">("general");
   const [startPage, setStartPage] = useState<StartPage>("today");
   const [sortPref, setSortPref] = useState<SortPref>("popular_latest");
   const [hideRead, setHideRead] = useState(false);
-  
+
+  // OPML States
+  const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
   const queryClient = useQueryClient();
   const settingsQuery = useQuery({
     queryKey: ["settings"],
@@ -90,6 +94,45 @@ export function SettingsModal({ open, onClose }: Props) {
     }
   };
 
+  const handleImportOPML = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+
+    setImporting(true);
+    try {
+      const res = await importOPML(file);
+      success("settings", "Import Successful", res.message);
+      // Optional: Refresh folders/feeds queries if you want immediate update
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      // Clear the input
+      e.target.value = "";
+    } catch (err: any) {
+      logError("settings", "Import Failed", extractErrorMessage(err));
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleExportOPML = async () => {
+    setExporting(true);
+    try {
+      const blob = await downloadOPML();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `rss-export-${new Date().toISOString().split("T")[0]}.opml`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      success("settings", "Export started", "Your OPML file is downloading");
+    } catch (err: any) {
+      logError("settings", "Export Failed", extractErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const panelToneClass = theme === "aurora" ? "sm:bg-emerald-50/80" : "sm:bg-gray-50";
   const selectedFont = FONT_OPTIONS.some((opt) => opt.value === fontFamily) ? fontFamily : FONT_OPTIONS[0].value;
 
@@ -111,13 +154,13 @@ export function SettingsModal({ open, onClose }: Props) {
               { key: "appearance", label: "Appearance" },
               { key: "reading", label: "Reading" },
               { key: "storage", label: "Storage" },
+              { key: "data", label: "Data" },
             ].map((item) => (
               <button
                 key={item.key}
                 onClick={() => setSection(item.key as typeof section)}
-                className={`mb-0 w-full whitespace-nowrap rounded-lg px-3 py-2 text-left sm:mb-1 ${
-                  section === item.key ? "bg-gray-200 font-semibold dark:bg-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-800"
-                }`}
+                className={`mb-0 w-full whitespace-nowrap rounded-lg px-3 py-2 text-left sm:mb-1 ${section === item.key ? "bg-gray-200 font-semibold dark:bg-gray-800" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  }`}
               >
                 {item.label}
               </button>
@@ -160,11 +203,10 @@ export function SettingsModal({ open, onClose }: Props) {
                         key={preset.key}
                         type="button"
                         onClick={() => handleThemeSelect(preset)}
-                        className={`rounded-xl border p-2 text-left transition ${
-                          selected
-                            ? "border-gray-900 ring-2 ring-gray-900/10 dark:border-gray-100 dark:ring-gray-100/20"
-                            : "border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700"
-                        }`}
+                        className={`rounded-xl border p-2 text-left transition ${selected
+                          ? "border-gray-900 ring-2 ring-gray-900/10 dark:border-gray-100 dark:ring-gray-100/20"
+                          : "border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700"
+                          }`}
                         aria-pressed={selected}
                       >
                         <div
@@ -263,7 +305,7 @@ export function SettingsModal({ open, onClose }: Props) {
 
           {section === "storage" && (
             <div className="settings-section space-y-6">
-              <FormGroup 
+              <FormGroup
                 label="Article Retention"
                 hint="Articles older than this will be automatically deleted during refresh. Bookmarked articles are never deleted."
               >
@@ -287,6 +329,56 @@ export function SettingsModal({ open, onClose }: Props) {
                   <p className="mt-2 text-xs text-red-600">Failed to save setting</p>
                 )}
               </FormGroup>
+            </div>
+          )}
+
+          {section === "data" && (
+            <div className="settings-section space-y-8">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100">Import / Export</h4>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Transfer your feeds to or from other RSS readers using the standard OPML format.
+                  </p>
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900/50">
+                    <h5 className="font-medium text-gray-900 dark:text-gray-100">Import OPML</h5>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Upload an .opml or .xml file to add feeds to your library.
+                    </p>
+                    <div className="mt-4">
+                      <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white shadow hover:bg-[var(--accent-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        {importing ? "Importing..." : "Select File"}
+                        <input
+                          type="file"
+                          accept=".opml,.xml"
+                          onChange={handleImportOPML}
+                          disabled={importing}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900/50">
+                    <h5 className="font-medium text-gray-900 dark:text-gray-100">Export OPML</h5>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Download a file containing all your feeds and folders.
+                    </p>
+                    <div className="mt-4">
+                      <Button
+                        variant="primary"
+                        onClick={handleExportOPML}
+                        disabled={exporting}
+                      >
+                        {exporting ? "Exporting..." : "Download Export"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

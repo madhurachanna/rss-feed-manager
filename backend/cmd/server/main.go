@@ -56,6 +56,7 @@ func main() {
 	topNewsService := services.NewTopNewsService(sqlDB)
 	summaryService := services.NewSummaryService()
 	authService := services.NewAuthService(sqlDB, appMailer)
+	opmlService := services.NewOPMLService(feedService)
 
 	sched := scheduler.NewScheduler(feedService, digestService, scheduler.Config{
 		UserID:         demoUserID,
@@ -73,6 +74,7 @@ func main() {
 		TopNewsService:      topNewsService,
 		SummaryService:      summaryService,
 		AuthService:         authService,
+		OPMLService:         opmlService,
 		Reader:              readerClient,
 		FrontendOrigin:      getEnv("FRONTEND_ORIGIN", "http://localhost:5173"),
 		ReaderRatePerMinute: parseInt(getEnv("READER_RATE_PER_MINUTE", "20"), 20),

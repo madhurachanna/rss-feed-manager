@@ -116,6 +116,20 @@ func (s *FeedService) ListFolders(ctx context.Context, userID int64) ([]models.F
 	return folders, nil
 }
 
+func (s *FeedService) GetFirstFolder(ctx context.Context, userID int64) (*models.Folder, error) {
+	var f models.Folder
+	err := s.db.QueryRowContext(ctx, `SELECT id, name, created_at FROM folders WHERE user_id = ? ORDER BY created_at ASC LIMIT 1`, userID).
+		Scan(&f.ID, &f.Name, &f.CreatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	f.UserID = userID
+	return &f, nil
+}
+
 func (s *FeedService) listFeedsForFolder(ctx context.Context, userID, folderID int64) ([]models.Feed, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
